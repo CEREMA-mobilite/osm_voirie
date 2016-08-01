@@ -1,0 +1,15 @@
+CREATE TABLE public.BD_voirie (nom_table)
+(
+id bigint,
+types_de_route text,
+velo text,
+pietons text,
+user_id integer NOT NULL,
+tstamp timestamp without time zone NOT NULL,
+tags hstore,
+linestring geometry(geometry,4326),
+CONSTRAINT pk_voirie PRIMARY KEY (id)
+)
+WITH (OIDS=FALSE);
+ALTER TABLE public.BD_voirie
+OWNER TO nome_utilisateur;
