@@ -1,0 +1,102 @@
+CREATE TABLE public.BD_voirie_global
+(
+id bigint,
+types_de_route text,
+velos text,
+pietons text,
+user_id integer NOT NULL,
+tstamp timestamp without time zone NOT NULL,
+tags hstore,
+linestring geometry(geometry,4326),
+CONSTRAINT pk_voirie_global PRIMARY KEY (id)
+)
+WITH (OIDS=FALSE);
+ALTER TABLE public.BD_voirie_global
+OWNER TO deus;
+
+INSERT INTO public.BD_voirie_global
+(
+id, 
+types_de_route,
+velos,
+pietons,
+user_id,
+tstamp,
+tags,
+linestring
+)
+SELECT 
+id,
+(CASE 
+WHEN tags @> '"highway"=>"motorway"' THEN 'motorway'
+WHEN tags @> '"highway"=>"trunk"' THEN 'trunk'
+WHEN tags @> '"highway"=>"primary"' THEN 'primary'
+WHEN tags @> '"highway"=>"secondary"' THEN 'secondary'
+WHEN tags @> '"highway"=>"tertiary"'THEN 'tertiary'
+WHEN tags @> '"highway"=>"unclassified"' THEN 'unclassified'
+WHEN tags @> '"highway"=>"residential"' THEN 'residential'
+WHEN tags @> '"highway"=>"service"' THEN 'service'
+WHEN tags @> '"highway"=>"motorway_link"' THEN 'motorway_link'
+WHEN tags @> '"highway"=>"trunk_link"' THEN 'trunk_link'
+WHEN tags @> '"highway"=>"primary_link"' THEN 'primary_link'
+WHEN tags @> '"highway"=>"secondary_link"' THEN 'secondary_link'
+WHEN tags @> '"highway"=>"tertiary_link"' THEN 'tertiary_link'
+WHEN tags @> '"highway"=>"living_street"' THEN 'living_street'
+WHEN tags @> '"highway"=>"track"' THEN 'track'
+WHEN tags @> '"highway"=>"road"' THEN 'road'
+WHEN tags @> '"highway"=>"path"' THEN 'path'
+WHEN tags @> '"junction"=>"roundabout"' THEN 'junction_roundabout'
+else 'vehicules_non_autorises'
+END) AS "types_de_route",	
+(CASE
+WHEN tags @> '"highway"=>"cycleway"' THEN 'cycleway'
+WHEN tags @> '"cycleway"=>"track"' THEN 'track'
+WHEN tags @> '"cycleway"=>"lane"' THEN 'lane'
+WHEN tags @> '"cycleway"=>"share_busway"' THEN 'share_busway'
+WHEN tags @> '"bicycle"=>"no"' THEN 'accès interdit aux velos'
+WHEN tags @> '"highway"=>"path"' and tags @> '"motor_vehicle"=>"no"' and not tags @> '"bicycle"=>"no"' THEN 'chemin velo'
+WHEN tags @> '"cycleway"=>"path"' THEN 'path'
+WHEN (tags @> '"bicycle"=>"yes"' or tags @> '"oneway"=>"true"') and not (tags @> '"cycleway"=>"opposite"' or tags @> '"cycleway"=>"opposite_lane"' or tags @> '"highway"=>"cycleway"' or tags @> '"cycleway"=>"opposite_track"') THEN 'sens unique non DSC'
+WHEN (tags @> '"cycleway"=>"lane"' or tags @> '"cycleway:right"=>"lane"') and (tags @> '"oneway"=>"yes"' or tags @> '"oneway"=>"true"' or tags @> '"oneway"=>"-1"') THEN 'bande cyclable sens unique'
+WHEN (tags @> '"cycleway:right"=>"lane"') and not (tags @> '"oneway"=>"yes"' or tags @> '"oneway"=>"true"' or tags @> '"oneway"=>"-1"') then 'bande cyclable double sens cote droit'
+WHEN (tags @> '"cycleway:left"=>"lane"') and not (tags @> '"oneway"=>"yes"' or tags @> '"oneway"=>"true"' or tags @> '"oneway"=>"-1"') then 'bande cyclable double sens cote gauche'
+WHEN (tags @> '"cycleway"=>"lane"') and not (tags @> '"oneway"=>"yes"' or tags @> '"oneway"=>"true"' or tags @> '"oneway"=>"-1"') then 'bande cyclable double sens'
+WHEN (tags @> '"highway"=>"cycleway"' and not (tags @> '"oneway"=>"yes"' or tags @> '"oneway"=>"true"' or tags @> '"oneway"=>"-1"')
+or ((tags @> '"highway"=>"cycleway"' or tags @> '"highway"=>"secondary"' or tags @> '"highway"=>"secondary_link"' 
+or tags @> '"highway"=>"unclassified"' or tags @> '"highway"=>"residential"' or tags @> '"highway"=>"service"' or tags @> '"highway"=>"tertiary"' 
+or tags @> '"highway"=>"tertiary_link"')
+AND (tags @> '"motor_vehicle"=>"no"' or tags @> '"motor_vehicle"=>"destination"')) 
+OR (tags @> '"highway"=>"path"' and tags @> '"motor_vehicle"=>"no"' and not tags @> '"bicycle"=>"no"'))
+then 'pite cyclable / route interdite aux vehicules a moteur'
+WHEN tags @> '"highway"=>"cycleway"' and (tags @> '"oneway"=>"yes"' or tags @> '"oneway"=>"true"' or tags @> '"oneway"=>"-1"') then 'piste cyclable sens unique'
+WHEN tags @> '"cycleway:right"=>"share_busway"' then 'bus + velo droite'
+WHEN tags @> '"cycleway:left"=>"share_busway"' then 'bus + velo gauche'
+WHEN tags @> '"cycleway"=>"share_busway"' and not (tags @> '"oneway"=>"yes"' or tags @> '"oneway"=>"true"' or tags @> '"oneway"=>"-1"') then 'bus + velo gauche et droite'
+WHEN tags @> '"cycleway"=>"share_busway"' and tags @> '"oneway"=>"yes"' then 'bus + velo droite sens unique'
+WHEN ((tags @> '"cycleway"=>"opposite"' or tags @> '"cycleway"=>"opposite_lane"' or tags @> '"cycleway"=>"opposite_track"') and (tags @> '"oneway"=>"yes"' or tags @> '"oneway"=>"true"' or tags @> '"oneway"=>"-1"')) then 'double sens cyclable'
+WHEN tags @> '"highway"=>"living_street"' THEN 'living_street'
+WHEN tags @> '"oneway"=>"yes"' THEN 'oneway'
+WHEN tags @> '"oneway"=>"true"' THEN 'oneway'
+WHEN tags @> '"cycleway"=>"opposite"' THEN 'opposite_cycleway'
+WHEN tags @> '"cycleway"=>"opposite_lane"' THEN 'opposite_lane'
+WHEN tags @> '"cycleway"=>"opposite_track"' THEN 'opposite_track'
+WHEN tags @> '"cycleway:right"=>"lane"' THEN 'right_lane'
+WHEN tags @> '"cycleway:left"=>"lane"' THEN 'left_lane'
+else 'deconseille/interdit aux velos'
+END) AS "velo",
+(CASE
+WHEN tags @> '"highway"=>"footway"' then 'footway'
+WHEN tags @> '"highway"=>"pedestrian"' then 'pedestrian'
+WHEN tags @> '"type"=>"route"' and tags @> '"route"=>"foot"' then 'route_pietonne'
+WHEN ((tags @> '"highway"=>"path"' or tags @> '"highway"=>"footway"')
+or (tags @> '"highway"=>"track"' and tags @> '"motor_vehicle"=>"no"' and not tags @> '"bicycle"=>"yes"') 
+or (((tags @> '"highway"=>"path"' and tags @> '"motor_vehicle"=>"no"' and not tags @> '"bicycle"=>"yes"') or tags @> '"highway"=>"footway"')
+and not tags @> '"access"=>"private"')) 
+then 'chemin pieton'
+ELSE 'zone non reservee aux pietons'
+END) AS "pietons",
+user_id,
+tstamp,
+tags,
+linestring
+FROM public.ways
