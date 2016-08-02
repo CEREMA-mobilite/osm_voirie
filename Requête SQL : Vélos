@@ -1,7 +1,7 @@
 CREATE TABLE public.BD_voirie_velos
 (
 id bigint,
-zones_cyclables text,
+velos text,
 user_id integer NOT NULL,
 tstamp timestamp without time zone NOT NULL,
 tags hstore,
@@ -15,7 +15,7 @@ OWNER TO deus;
 INSERT INTO public.BD_voirie_velos
 (
 id, 
-zones_cyclables,
+velos,
 user_id,
 tstamp,
 tags,
