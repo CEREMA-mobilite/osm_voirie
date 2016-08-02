@@ -1,4 +1,3 @@
-DROP TABLE public.BD_voirie_routes;
 CREATE TABLE public.BD_voirie_routes
 (
 id bigint,
@@ -49,5 +48,4 @@ user_id,
 tstamp,
 tags,
 linestring
-FROM public.ways) AS routes
-WHERE types_de_route != 'vehicules_non_autorises'
+FROM public.ways
