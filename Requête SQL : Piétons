@@ -1,4 +1,4 @@
-CREATE TABLE public.BD_voirie_pietons
+CREATE TABLE public.BD_voirie_piétons
 (
 id bigint,
 pietons text,
@@ -9,10 +9,10 @@ linestring geometry(geometry,4326),
 CONSTRAINT pk_voirie_pietons PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);
-ALTER TABLE public.BD_voirie_pietons
+ALTER TABLE public.BD_voirie_piétons
 OWNER TO deus;
 
-INSERT INTO public.BD_voirie_pietons
+INSERT INTO public.BD_voirie_piétons
 (
 id, 
 pietons,
@@ -21,7 +21,8 @@ tstamp,
 tags,
 linestring
 )
-SELECT 
+SELECT * FROM 
+(SELECT
 id,
 (CASE
 WHEN tags @> '"highway"=>"footway"' then 'footway'
@@ -38,4 +39,5 @@ user_id,
 tstamp,
 tags,
 linestring
-FROM public.ways
+FROM public.ways) AS zones_pietonnes
+WHERE pietons != 'zone non reservee aux pietons'
