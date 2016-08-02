@@ -1,3 +1,4 @@
+-- DROP TABLE public.BD_voirie_routes
 CREATE TABLE public.BD_voirie_routes
 (
 id bigint,
