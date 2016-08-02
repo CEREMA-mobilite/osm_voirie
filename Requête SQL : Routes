@@ -1,0 +1,53 @@
+DROP TABLE public.BD_voirie_routes;
+CREATE TABLE public.BD_voirie_routes
+(
+id bigint,
+types_de_route text,
+user_id integer NOT NULL,
+tstamp timestamp without time zone NOT NULL,
+tags hstore,
+linestring geometry(geometry,4326),
+CONSTRAINT pk_voirie_routes PRIMARY KEY (id)
+)
+WITH (OIDS=FALSE);
+ALTER TABLE public.BD_voirie_routes
+OWNER TO deus;
+
+INSERT INTO public.BD_voirie_routes
+(
+id, 
+types_de_route,
+user_id,
+tstamp,
+tags,
+linestring
+)
+SELECT 
+id,
+(CASE 
+WHEN tags @> '"highway"=>"motorway"' THEN 'motorway'
+WHEN tags @> '"highway"=>"trunk"' THEN 'trunk'
+WHEN tags @> '"highway"=>"primary"' THEN 'primary'
+WHEN tags @> '"highway"=>"secondary"' THEN 'secondary'
+WHEN tags @> '"highway"=>"tertiary"' THEN 'tertiary'
+WHEN tags @> '"highway"=>"unclassified"' THEN 'unclassified'
+WHEN tags @> '"highway"=>"residential"' THEN 'residential'
+WHEN tags @> '"highway"=>"service"' THEN 'service'
+WHEN tags @> '"highway"=>"motorway_link"' THEN 'motorway_link'
+WHEN tags @> '"highway"=>"trunk_link"' THEN 'trunk_link'
+WHEN tags @> '"highway"=>"primary_link"' THEN 'primary_link'
+WHEN tags @> '"highway"=>"secondary_link"' THEN 'secondary_link'
+WHEN tags @> '"highway"=>"tertiary_link"' THEN 'tertiary_link'
+WHEN tags @> '"highway"=>"living_street"' THEN 'living_street'
+WHEN tags @> '"highway"=>"track"' THEN 'track'
+WHEN tags @> '"highway"=>"road"' THEN 'road'
+WHEN tags @> '"highway"=>"path"' THEN 'path'
+WHEN tags @> '"junction"=>"roundabout"' THEN 'junction_roundabout'
+else 'vehicules_non_autorises'
+END) AS "types_de_route",	
+user_id,
+tstamp,
+tags,
+linestring
+FROM public.ways) AS routes
+WHERE types_de_route != 'vehicules_non_autorises'
