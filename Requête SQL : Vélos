@@ -1,4 +1,4 @@
-CREATE TABLE public.BD_voirie_velos
+CREATE TABLE public.BD_voirie_vélos
 (
 id bigint,
 velos text,
@@ -9,10 +9,10 @@ linestring geometry(geometry,4326),
 CONSTRAINT pk_voirie_velos PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);
-ALTER TABLE public.BD_voirie_velos
+ALTER TABLE public.BD_voirie_vélos
 OWNER TO deus;
 
-INSERT INTO public.BD_voirie_velos
+INSERT INTO public.BD_voirie_vélos
 (
 id, 
 velos,
@@ -21,7 +21,8 @@ tstamp,
 tags,
 linestring
 )
-SELECT 
+SELECT * FROM 
+(SELECT
 id,
 (CASE
 WHEN tags @> '"highway"=>"cycleway"' THEN 'cycleway'
@@ -62,4 +63,5 @@ user_id,
 tstamp,
 tags,
 linestring
-FROM public.ways
+FROM public.ways) AS zones_cyclables
+WHERE velo != 'deconseille/interdit aux velos'
