@@ -1,3 +1,4 @@
+-- DROP TABLE public.BD_voirie_global
 CREATE TABLE public.BD_voirie_global
 (
 id bigint,
