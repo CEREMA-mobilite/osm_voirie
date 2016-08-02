@@ -1,0 +1,92 @@
+CREATE TABLE public.BD_voirie_surfaces
+(
+id bigint,
+surfaces text,
+user_id integer NOT NULL,
+tstamp timestamp without time zone NOT NULL,
+tags hstore,
+geom geometry(geometry,4326),
+CONSTRAINT pk_voirie_surfaces PRIMARY KEY (id)
+)
+WITH (OIDS=FALSE);
+ALTER TABLE public.BD_voirie_surfaces
+OWNER TO deus;
+
+INSERT INTO public.BD_voirie_surfaces
+(
+id, 
+surfaces,
+user_id,
+tstamp,
+tags,
+geom
+)
+SELECT * FROM 
+(SELECT
+id,
+(CASE 
+-- nodes, points
+WHEN tags @> '"amenity"=>"parking"' THEN 'parking'
+WHEN tags @> '"amenity"=>"post_box"' THEN 'post_box'
+WHEN tags @> '"amenity"=>"post_office"' THEN 'post_office'
+WHEN tags @> '"amenity"=>"telephone"' THEN 'telephone'
+WHEN tags @> '"amenity"=>"fire_station"' THEN 'fire_station'
+WHEN tags @> '"amenity"=>"police"' THEN 'police'
+WHEN tags @> '"amenity"=>"recycling"' THEN 'recycling'
+WHEN (tags @> '"amenity"=>"place_of_worship"' AND tags @> '"religion"=>"christian"') THEN 'christian_church'
+WHEN tags @> '"amenity"=>"drinking_water"' THEN 'drinking_water'
+WHEN tags @> '"amenity"=>"bank"' THEN 'bank'
+WHEN tags @> '"amenity"=>"atm"' THEN 'atm'
+WHEN tags @> '"amenity"=>"toilets"' THEN 'toilets'
+WHEN tags @> '"amenity"=>"library"' THEN 'library'
+WHEN tags @> '"natural"=>"tree"' THEN 'tree'
+WHEN tags @> '"highway"=>"bus_stop"' THEN 'bus_stop'
+WHEN tags @> '"railway"=>"station"' THEN 'railway_station'
+WHEN tags @> '"barrier"=>"gate"' THEN 'gate'
+WHEN tags @> '"tourism"=>"viewpoint"' THEN 'viewpoint'
+WHEN tags @> '"tourism"=>"hotel"' THEN 'hotel'
+WHEN tags @> '"tourism"=>"museum"' THEN 'museum'
+WHEN tags @> '"amenity"=>"pub"' THEN 'pub'
+WHEN tags @> '"amenity"=>"fast_food"' THEN 'fast_food'
+WHEN (tags @> '"amenity"=>"bicycle_parking"' AND NOT tags @> '"covered"=>"yes"') THEN 'parking_velo_non_couvert_ou_indefini'
+WHEN (tags @> '"amenity"=>"bicycle_parking"' AND tags @> '"covered"=>"yes"') THEN 'parking_velo_couvert'
+WHEN tags @> '"amenity"=>"bicycle_rental"' THEN 'bicycle_rental'
+WHEN tags @> '"shop"=>"bicycle"' THEN 'shop_bicycle'
+WHEN tags @> '"amenity"=>"bench"' THEN 'bench'
+WHEN tags @> '"sport"=>"golf"' THEN 'golf'
+-- areas
+WHEN tags @> '"natural"=>"beach"' THEN 'beach'
+WHEN tags @> '"landuse"=>"village_green"' THEN 'village_green'
+WHEN (tags @> '"landuse"=>"forest"' OR tags @> '"natural"=>"wood"') THEN 'forest'
+WHEN tags @> '"landuse"=>"farm"' THEN 'farm'
+WHEN tags @> '"landuse"=>"grass"' THEN 'grass'
+WHEN tags @> '"natural"=>"fell"' THEN 'fell'
+WHEN tags @> '"natural"=>"glacier"' THEN 'glacier'
+WHEN tags @> '"boundary"=>"national_park"' THEN 'national_park'
+WHEN tags @> '"landuse"=>"allotments"' THEN 'allotments'
+WHEN (tags @> '"natural"=>"meadow"' OR tags @> '"landuse"=>"meadow"') THEN 'meadow'
+WHEN tags @> '"leisure"=>"nature_reserve"' THEN 'nature_reserve'
+WHEN tags @> '"leisure"=>"playground"' THEN 'playground'
+WHEN tags @> '"amenity"=>"parking"' THEN 'parking'
+WHEN tags @> '"leisure"=>"track"' THEN 'track'
+WHEN (tags @> '"amenity"=>"grave_yard"' OR tags @> '"landuse"=>"cemetery"') THEN 'cemetery'
+WHEN (tags @> '"landuse"=>"military"' OR tags @> '"military"=>"barracks"') THEN 'military_barracks'
+WHEN tags @> '"leisure"=>"park"' THEN 'park'
+WHEN tags @> '"leisure"=>"garden"' THEN 'garden'
+WHEN tags @> '"leisure"=>"pitch"' THEN 'pitch'
+WHEN tags @> '"leisure"=>"stadium"' THEN 'stadium'
+WHEN tags @> '"landuse"=>"retail"' THEN 'retail'
+WHEN tags @> '"landuse"=>"industrial"' THEN 'industrial'
+WHEN tags @> '"landuse"=>"commercial"' THEN 'commercial'
+WHEN tags @> '"landuse"=>"residential"' THEN 'residential'
+WHEN tags @> '"aeroway"=>"apron"' THEN 'aeroway_apron'
+WHEN tags @> '"aeroway"=>"terminal"' THEN 'aeroway_terminal'
+WHEN (tags @> '"leisure"=>"pitch"' OR tags @> '"leisure"=>"golf_course"') THEN 'golf_course'
+else 'autres'
+END) AS "surfaces",
+user_id,
+tstamp,
+tags,
+geom
+FROM public.nodes) AS surface
+WHERE surfaces != 'autres'
