@@ -1,0 +1,65 @@
+CREATE TABLE public.BD_voirie_nodes
+(
+id bigint,
+nodes text,
+user_id integer NOT NULL,
+tstamp timestamp without time zone NOT NULL,
+tags hstore,
+geom geometry(geometry,4326),
+CONSTRAINT pk_voirie_nodes PRIMARY KEY (id)
+)
+WITH (OIDS=FALSE);
+ALTER TABLE public.BD_voirie_nodes
+OWNER TO deus;
+
+INSERT INTO public.BD_voirie_nodes
+(
+id, 
+nodes,
+user_id,
+tstamp,
+tags,
+geom
+)
+SELECT * FROM 
+(SELECT
+id,
+(CASE 
+WHEN tags @> '"highway"=>"escape"' THEN 'escape'
+WHEN tags @> '"highway"=>"give_way"' THEN 'give_way'
+WHEN tags @> '"highway"=>"mini_roundabout"' THEN 'mini_roundabout'
+WHEN tags @> '"highway"=>"turning_circle"' THEN 'turning_circle'
+WHEN tags @> '"highway"=>"motorway_junction"' THEN 'motorway_junction'
+WHEN tags @> '"highway"=>"passing_place"' THEN 'passing_place'
+WHEN tags @> '"highway"=>"rest_area"' THEN 'rest_area'
+WHEN tags @> '"highway"=>"speed_camera"' THEN 'speed_camera'
+WHEN tags @> '"highway"=>"services"' THEN 'services'
+WHEN tags @> '"highway"=>"traffic_signals"' THEN 'traffic_signals'
+WHEN tags @> '"amenity"=>"bicycle_parking"' THEN 'bicycle_parking'
+WHEN tags @> '"amenity"=>"bicycle_rental"' THEN 'bicycle_rental'
+WHEN tags @> '"shop"=>"bicycle"' THEN 'bicycle_shop'
+WHEN tags @> '"amenity"=>"compressed_air"' THEN 'compressed_air'
+WHEN tags @> '"compressed_air"=>"yes"' THEN 'compressed_air'
+WHEN tags @> '"service:bicycle:pump"=>"yes"' THEN 'bicycle_pump'
+WHEN tags @> '"place"=>"city"' THEN 'city_place'
+WHEN tags @> '"place"=>"town"' THEN 'town_place'
+WHEN tags @> '"place"=>"village"' THEN 'village_place'
+WHEN tags @> '"place"=>"suburb"' THEN 'suburb_place'
+WHEN tags @> '"amenity"=>"hospital"' THEN 'hospital'
+WHEN tags @> '"shop"=>"doityourself"' THEN 'shop_doityourself'
+WHEN tags @> '"shop"=>"hairdresser"' THEN 'shop_hairdresser'
+WHEN tags @> '"shop"=>"supermarket"' THEN 'supermarket'
+WHEN tags @> '"shop"=>"convenience"' THEN 'shop_convenience'
+WHEN tags @> '"shop"=>"bakery"' THEN 'bakery'
+WHEN tags @> '"amenity"=>"restaurant"' THEN 'restaurant'
+WHEN tags @> '"amenity"=>"cafe"' THEN 'cafe'
+WHEN tags @> '"amenity"=>"pharmacy"' THEN 'pharmacy'
+WHEN tags @> '"natural"=>"peak"' THEN 'peak'
+else 'autres'
+END) AS "nodes",
+user_id,
+tstamp,
+tags,
+geom
+FROM public.nodes) AS noeuds
+WHERE nodes != 'autres'
