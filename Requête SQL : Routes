@@ -21,7 +21,8 @@ tstamp,
 tags,
 linestring
 )
-SELECT 
+SELECT * FROM 
+(SELECT
 id,
 (CASE 
 WHEN tags @> '"highway"=>"motorway"' THEN 'motorway'
@@ -48,4 +49,5 @@ user_id,
 tstamp,
 tags,
 linestring
-FROM public.ways
+FROM public.ways) AS routes
+WHERE types_de_route != 'vehicules_non_autorises'
