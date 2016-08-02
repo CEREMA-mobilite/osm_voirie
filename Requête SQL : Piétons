@@ -1,0 +1,41 @@
+CREATE TABLE public.BD_voirie_pietons
+(
+id bigint,
+types_de_route text,
+user_id integer NOT NULL,
+tstamp timestamp without time zone NOT NULL,
+tags hstore,
+linestring geometry(geometry,4326),
+CONSTRAINT pk_voirie_pietons PRIMARY KEY (id)
+)
+WITH (OIDS=FALSE);
+ALTER TABLE public.BD_voirie_pietons
+OWNER TO deus;
+
+INSERT INTO public.BD_voirie_pietons
+(
+id, 
+zones_pietonnes,
+user_id,
+tstamp,
+tags,
+linestring
+)
+SELECT 
+id,
+(CASE
+WHEN tags @> '"highway"=>"footway"' then 'footway'
+WHEN tags @> '"highway"=>"pedestrian"' then 'pedestrian'
+WHEN tags @> '"type"=>"route"' and tags @> '"route"=>"foot"' then 'route_pietonne'
+WHEN ((tags @> '"highway"=>"path"' or tags @> '"highway"=>"footway"')
+or (tags @> '"highway"=>"track"' and tags @> '"motor_vehicle"=>"no"' and not tags @> '"bicycle"=>"yes"') 
+or (((tags @> '"highway"=>"path"' and tags @> '"motor_vehicle"=>"no"' and not tags @> '"bicycle"=>"yes"') or tags @> '"highway"=>"footway"')
+and not tags @> '"access"=>"private"')) 
+then 'chemin pieton'
+ELSE 'zone non reservee aux pietons'
+END) AS "pietons",
+user_id,
+tstamp,
+tags,
+linestring
+FROM public.ways
