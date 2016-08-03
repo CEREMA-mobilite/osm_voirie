@@ -1,7 +1,7 @@
 # osm_voirie
 Description de la voirie dans OpenStreetMap.    
 
-tutoriel pour importer et utiliser les données OSM dans une optique "voirie".
+Tutoriel pour importer et utiliser les données OSM dans une optique "voirie".
 
 Réalisé par Sébastien Poilroux, étudiant en Master à l'Université Savoie Mont-Blanc et stagiaire au CEREMA Méditerranée
 
